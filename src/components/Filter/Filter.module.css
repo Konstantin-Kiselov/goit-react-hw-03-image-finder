@@ -1,0 +1,20 @@
+.label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.input {
+  padding: 2px 5px;
+  margin-top: 6px;
+  width: 200px;
+}
+
+.input:hover,
+.input:focus {
+  border-color: rgb(82, 82, 219);
+  border-radius: 4px;
+
+  transition: all 250ms linear;
+}

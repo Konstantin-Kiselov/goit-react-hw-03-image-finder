@@ -1,0 +1,12 @@
+.section {
+  width: 400px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.title {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
