@@ -7,6 +7,7 @@ class ImageGallery extends Component {
   state = {
     gallery: null,
     error: null,
+    status: 'idle',
   };
 
   componentDidMount() {
@@ -36,13 +37,19 @@ class ImageGallery extends Component {
 
   render() {
     const { onClick } = this.props;
-    const { gallery, error } = this.state;
-    console.log(gallery);
-    console.log(error);
+    const { gallery, error, status } = this.state;
+
+    // if (status === 'idle') {
+    //   return;
+    // }
+
+    if (status === 'pending') {
+      return <div>Загружаем...</div>;
+    }
 
     return (
       <>
-        {error && <h1>Введите что то нормальное.</h1>}
+        {error && <h1>Нет результатов поиска</h1>}
         {gallery && (
           <ul className={s.imageGallery}>
             {gallery.map(({ id, webformatURL, largeImageURL, tags }) => {
