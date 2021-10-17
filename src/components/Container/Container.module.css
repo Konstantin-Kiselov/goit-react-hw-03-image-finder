@@ -1,5 +1,9 @@
 .container {
-  width: 1200px;
+  /* width: 1200px;
   padding: 20px;
-  margin: 0 auto;
+  margin: 0 auto; */
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 16px;
+  padding-bottom: 24px;
 }
