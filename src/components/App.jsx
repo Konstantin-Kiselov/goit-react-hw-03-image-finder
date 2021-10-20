@@ -1,7 +1,7 @@
 import { Component } from 'react';
 // import { v4 as uuidv4 } from 'uuid';
 import Container from './Container/Container';
-import Searchbar from '../Searchbar/Searchbar';
+import Searchbar from './Searchbar/Searchbar';
 // import Section from './Section/Section';
 // import ContactList from './ContactList/ContactList';
 // import Form from './Form/Form';

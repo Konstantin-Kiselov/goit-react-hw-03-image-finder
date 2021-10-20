@@ -1,35 +1,79 @@
-import ImageGalleryItem from './ImageGalleryItem';
-import s from './ImageGallery.module.css';
-// import API from '../../services/api'
 import { Component } from 'react';
+import ImageGalleryItem from './ImageGalleryItem';
+import imagesAPI from '../../services/images-api';
+import Loader from 'react-loader-spinner';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import s from './ImageGallery.module.css';
 
 class ImageGallery extends Component {
   state = {
-    gallery: null,
+    page: 1,
+    gallery: [],
     error: null,
     status: 'idle',
   };
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.searchQuery !== this.props.searchQuery) {
-      this.setState({ status: 'pending', gallery: null });
+  componentDidUpdate(prevProps, prevState) {
+    const prevQuery = prevProps.searchQuery;
+    const nextQuery = this.props.searchQuery;
 
-      const API_KEY = '23027480-c70d45ac3781d0e477b4a7117';
-      const url = `https://pixabay.com/api/?q=${this.props.searchQuery}&page=1&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
 
-      fetch(url)
-        .then(res => res.json())
-        .then(gallery => {
-          if (gallery.hits.length > 0) {
-            this.setState({ gallery: gallery.hits, status: 'resolved' });
+    if (nextPage > 1) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+
+    if (prevQuery !== nextQuery) {
+      this.setState({ status: 'pending', page: 1 });
+
+      imagesAPI
+        .fetchImages(nextQuery, nextPage)
+        .then(({ hits }) => {
+          if (hits.length > 0) {
+            this.setState(() => {
+              return {
+                gallery: hits,
+                status: 'resolved',
+              };
+            });
           } else {
-            alert(`По запросу ${this.props.searchQuery} ничего не найдено.`);
+            alert(`По запросу ${nextQuery} ничего не найдено.`);
             this.setState({ status: 'idle' });
           }
         })
         .catch(error => this.setState({ error, status: 'rejected' }));
     }
+
+    if (prevQuery === nextQuery && prevPage !== nextPage) {
+      // this.setState({ status: 'pending' });
+
+      imagesAPI
+        .fetchImages(nextQuery, nextPage)
+        .then(({ hits }) => {
+          if (hits.length > 0) {
+            this.setState(prevState => {
+              return {
+                gallery: [...prevState.gallery, ...hits],
+                status: 'resolved',
+              };
+            });
+          } else {
+            alert(`По запросу ${nextQuery} больше ничего не найдено.`);
+          }
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
+    }
   }
+
+  handleClickBtn = () => {
+    this.setState(({ page }) => {
+      return { page: page + 1 };
+    });
+  };
 
   render() {
     const { onClick } = this.props;
@@ -40,7 +84,15 @@ class ImageGallery extends Component {
     }
 
     if (status === 'pending') {
-      return <div>Загружаем...</div>;
+      return (
+        <Loader
+          className={s.loader}
+          type="Circles"
+          color="#00BFFF"
+          height={80}
+          width={80}
+        />
+      );
     }
 
     if (status === 'rejected') {
@@ -49,19 +101,24 @@ class ImageGallery extends Component {
 
     if (status === 'resolved') {
       return (
-        <ul className={s.imageGallery}>
-          {gallery.map(({ id, webformatURL, largeImageURL, tags }) => {
-            return (
-              <ImageGalleryItem
-                key={id}
-                src={webformatURL}
-                dataSrc={largeImageURL}
-                tags={tags}
-                onClick={onClick}
-              />
-            );
-          })}
-        </ul>
+        <>
+          <ul className={s.imageGallery}>
+            {gallery.map(({ id, webformatURL, largeImageURL, tags }) => {
+              return (
+                <ImageGalleryItem
+                  key={id}
+                  src={webformatURL}
+                  dataSrc={largeImageURL}
+                  tags={tags}
+                  onClick={onClick}
+                />
+              );
+            })}
+          </ul>
+          <button onClick={this.handleClickBtn} type="button">
+            Load more
+          </button>
+        </>
       );
     }
   }
