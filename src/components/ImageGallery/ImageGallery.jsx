@@ -1,24 +1,32 @@
 import { Component } from 'react';
-import ImageGalleryItem from './ImageGalleryItem';
+import PropTypes from 'prop-types';
 import imagesAPI from '../../services/images-api';
+import ImageGalleryItem from './ImageGalleryItem';
+import Button from '../Button/Button';
 import Loader from 'react-loader-spinner';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import s from './ImageGallery.module.css';
 
 class ImageGallery extends Component {
   state = {
-    page: 1,
     gallery: [],
     error: null,
     status: 'idle',
   };
 
-  componentDidUpdate(prevProps, prevState) {
+  static propTypes = {
+    onClickImg: PropTypes.func.isRequired,
+    searchQuery: PropTypes.string.isRequired,
+    page: PropTypes.number.isRequired,
+    handleClickBtn: PropTypes.func.isRequired,
+  };
+
+  componentDidUpdate(prevProps) {
     const prevQuery = prevProps.searchQuery;
     const nextQuery = this.props.searchQuery;
 
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
+    const prevPage = prevProps.page;
+    const nextPage = this.props.page;
 
     if (nextPage > 1) {
       window.scrollTo({
@@ -28,55 +36,33 @@ class ImageGallery extends Component {
     }
 
     if (prevQuery !== nextQuery) {
-      this.setState({ status: 'pending', page: 1 });
-
-      imagesAPI
-        .fetchImages(nextQuery, nextPage)
-        .then(({ hits }) => {
-          if (hits.length > 0) {
-            this.setState(() => {
-              return {
-                gallery: hits,
-                status: 'resolved',
-              };
-            });
-          } else {
-            alert(`По запросу ${nextQuery} ничего не найдено.`);
-            this.setState({ status: 'idle' });
-          }
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+      this.setState({ gallery: [], status: 'pending' });
     }
 
-    if (prevQuery === nextQuery && prevPage !== nextPage) {
-      // this.setState({ status: 'pending' });
-
-      imagesAPI
-        .fetchImages(nextQuery, nextPage)
-        .then(({ hits }) => {
-          if (hits.length > 0) {
-            this.setState(prevState => {
-              return {
-                gallery: [...prevState.gallery, ...hits],
-                status: 'resolved',
-              };
-            });
-          } else {
-            alert(`По запросу ${nextQuery} больше ничего не найдено.`);
-          }
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+    if (prevQuery !== nextQuery || prevPage !== nextPage) {
+      setTimeout(() => {
+        imagesAPI
+          .fetchImages(nextQuery, nextPage)
+          .then(({ hits }) => {
+            if (hits.length > 0) {
+              this.setState(prevState => {
+                return {
+                  gallery: [...prevState.gallery, ...hits],
+                  status: 'resolved',
+                };
+              });
+            } else {
+              alert(`По запросу ${nextQuery} ничего не найдено.`);
+              this.setState({ status: 'idle' });
+            }
+          })
+          .catch(error => this.setState({ error, status: 'rejected' }));
+      }, 2000);
     }
   }
 
-  handleClickBtn = () => {
-    this.setState(({ page }) => {
-      return { page: page + 1 };
-    });
-  };
-
   render() {
-    const { onClick } = this.props;
+    const { onClickImg, handleClickBtn } = this.props;
     const { gallery, error, status } = this.state;
 
     if (status === 'idle') {
@@ -85,13 +71,28 @@ class ImageGallery extends Component {
 
     if (status === 'pending') {
       return (
-        <Loader
-          className={s.loader}
-          type="Circles"
-          color="#00BFFF"
-          height={80}
-          width={80}
-        />
+        <>
+          <ul className={s.imageGallery}>
+            {gallery.map(({ id, webformatURL, largeImageURL, tags }) => {
+              return (
+                <ImageGalleryItem
+                  key={id}
+                  src={webformatURL}
+                  dataSrc={largeImageURL}
+                  tags={tags}
+                  onClick={onClickImg}
+                />
+              );
+            })}
+          </ul>
+          <Loader
+            className={s.loader}
+            type="Circles"
+            color="#00BFFF"
+            height={80}
+            width={80}
+          />
+        </>
       );
     }
 
@@ -110,14 +111,17 @@ class ImageGallery extends Component {
                   src={webformatURL}
                   dataSrc={largeImageURL}
                   tags={tags}
-                  onClick={onClick}
+                  onClick={onClickImg}
                 />
               );
             })}
           </ul>
-          <button onClick={this.handleClickBtn} type="button">
-            Load more
-          </button>
+          <Button
+            handleClickBtn={() => {
+              this.setState({ status: 'pending' });
+              handleClickBtn();
+            }}
+          />
         </>
       );
     }

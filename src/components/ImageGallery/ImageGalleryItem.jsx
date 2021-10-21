@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
 
 function ImageGalleryItem({ src, tags, dataSrc, onClick }) {
@@ -12,5 +13,11 @@ function ImageGalleryItem({ src, tags, dataSrc, onClick }) {
     </li>
   );
 }
+ImageGalleryItem.propTypes = {
+  src: PropTypes.string.isRequired,
+  dataSrc: PropTypes.string.isRequired,
+  tags: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+};
 
 export default ImageGalleryItem;
