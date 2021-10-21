@@ -40,24 +40,22 @@ class ImageGallery extends Component {
     }
 
     if (prevQuery !== nextQuery || prevPage !== nextPage) {
-      setTimeout(() => {
-        imagesAPI
-          .fetchImages(nextQuery, nextPage)
-          .then(({ hits }) => {
-            if (hits.length > 0) {
-              this.setState(prevState => {
-                return {
-                  gallery: [...prevState.gallery, ...hits],
-                  status: 'resolved',
-                };
-              });
-            } else {
-              alert(`По запросу ${nextQuery} ничего не найдено.`);
-              this.setState({ status: 'idle' });
-            }
-          })
-          .catch(error => this.setState({ error, status: 'rejected' }));
-      }, 2000);
+      imagesAPI
+        .fetchImages(nextQuery, nextPage)
+        .then(({ hits }) => {
+          if (hits.length > 0) {
+            this.setState(prevState => {
+              return {
+                gallery: [...prevState.gallery, ...hits],
+                status: 'resolved',
+              };
+            });
+          } else {
+            alert(`По запросу ${nextQuery} ничего не найдено.`);
+            this.setState({ status: 'idle' });
+          }
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
     }
   }
 
