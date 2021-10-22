@@ -36,7 +36,7 @@ class App extends Component {
     }
 
     if (prevQuery !== nextQuery) {
-      this.setState({ gallery: [] });
+      this.setState({ gallery: [], status: 'pending' });
     }
 
     if (prevQuery !== nextQuery || prevPage !== nextPage) {
@@ -66,7 +66,9 @@ class App extends Component {
   }
 
   handleSubmitInput = newQuery => {
-    this.setState({ searchQuery: newQuery, page: 1, status: 'pending' });
+    if (newQuery !== this.state.searchQuery) {
+      this.setState({ searchQuery: newQuery, page: 1, status: 'pending' });
+    }
   };
 
   handleClickImg = event => {
@@ -108,7 +110,7 @@ class App extends Component {
       return (
         <Container>
           <Searchbar onSubmit={this.handleSubmitInput} />
-          <ImageGallery gallery={gallery} />
+          {gallery.length > 0 && <ImageGallery gallery={gallery} />}
           <Loader
             className={s.loader}
             type="Circles"
